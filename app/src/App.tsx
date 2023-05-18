@@ -6,9 +6,10 @@ import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
 import { useCallback, useState } from 'react';
 import Typography from '@mui/joy/Typography';
-import { Task, getListTasksQueryKey, useCreateTask, useListTasks, useUpdateTask } from './generated';
-import { useQueryClient } from 'react-query';
+import { Task, UpdateTask200, UpdateTaskBody, getListTasksQueryKey, useCreateTask, useListTasks, useUpdateTask } from './generated';
+import { useQueryClient, UseMutationResult } from 'react-query';
 import { IconButton, Modal } from '@mui/material';
+import type { AxiosError, AxiosResponse} from 'axios'
 
 const MainStyle = {
    display: 'grid',
@@ -66,7 +67,7 @@ const BoxTaskStyle = {
 export const App = () => {
   const [title, setTitle] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [updateTask, setUpdateTask] = useState({});
+  const [updateTask, setUpdateTask] = useState<Task | {}>({});
    
   const onChangeTitle = useCallback((event: React.ChangeEvent<HTMLInputElement>) => setTitle(event.target.value), [title]);
   const { data, status } = useListTasks();
@@ -145,7 +146,17 @@ export const App = () => {
   );
 };
 
-const EditorModal = ({props}) => {
+type EditModalProps = {
+  isModalOpen: boolean,
+  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  updateTaskMutation: UseMutationResult<AxiosResponse<UpdateTask200, any>, AxiosError<unknown, any>, {
+    taskId: string;
+    data: UpdateTaskBody;
+  }, unknown>,
+  data: Task
+}
+
+const EditorModal = (props: EditModalProps) => {
   const { isModalOpen, setIsModalOpen, updateTaskMutation, data } = props
   const [title, setTitle] = useState('');
 
