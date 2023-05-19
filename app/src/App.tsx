@@ -111,12 +111,12 @@ export const App = () => {
 
   return (
     <main style={MainStyle}>
-        <EditorModal props={{
-          isModalOpen: isModalOpen,
-          setIsModalOpen: setIsModalOpen,
-          updateTaskMutation: updateTaskMutation,
-          data: updateTask
-        }}/>
+        <EditorModal 
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+          updateTaskMutation={updateTaskMutation}
+          data={updateTask as Task}
+        />
       <Container style={ContainerStyle}>
         <Box>
           <Input
