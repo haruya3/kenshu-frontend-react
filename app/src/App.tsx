@@ -90,16 +90,20 @@ export const App = () => {
     },
   });
 
-  const updateTaskMutation = useUpdateTask(
-    {
-      mutation: 
-      {
-        onSuccess: (result) => {
-          client.setQueryData(result.data.task.id, result.data.task)
-        }
-      },
-    }
-  )
+  const updateTaskMutation = useUpdateTask({
+    mutation: {
+      onSuccess: (result) =>
+        client.setQueryData(getListTasksQueryKey(), (prevState: any) => {
+          const newTasks = prevState.data.tasks.map((task: Task) =>
+            task.id === result.data.task.id ? result.data.task : task
+          );
+          return {
+            ...prevState,
+            data: { tasks: newTasks },
+          };
+        }),
+    },
+  });
 
   const onClickCreateTaskButton = useCallback(() => {
     createTaskMutation.mutate();
@@ -112,10 +116,13 @@ export const App = () => {
   }
 
   const onClickCheckButton = (task: Task) => {
-    task.finishedAt = new Date().toISOString();
+    const finishedAt = new Date().toISOString();
     updateTaskMutation.mutate({
       taskId: task.id, 
-      data: task
+      data: {
+        ...task,
+        finishedAt,
+      }
     });
   }
 
