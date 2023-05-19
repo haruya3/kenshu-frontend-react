@@ -94,7 +94,9 @@ export const App = () => {
     {
       mutation: 
       {
-        onSuccess: (result) => client.setQueryData(result.id, result.title)
+        onSuccess: (result) => {
+          client.setQueryData(result.data.task.id, result.data.task)
+        }
       },
     }
   )
@@ -107,6 +109,14 @@ export const App = () => {
   const handleOpenModal = (data: Task) => {
     setUpdateTask(data);
     setIsModalOpen(true);
+  }
+
+  const onClickCheckButton = (task: Task) => {
+    task.finishedAt = new Date().toISOString();
+    updateTaskMutation.mutate({
+      taskId: task.id, 
+      data: task
+    });
   }
 
   return (
@@ -132,8 +142,8 @@ export const App = () => {
           }
           {
             status === 'success' && data.data.tasks.map((data: Task) => 
-            <Box key={data.id}>
-              {/* <IconButton onClick={(data) => onClickCheckButton} color='primary'> <CheckCircleOutlineIcon color='success' /> </IconButton> */}
+            <Box key={data.id} style={BoxTaskStyle}>
+              <IconButton style={{color: data.finishedAt === null ? '#64748B' : 'green'}} onClick={() => onClickCheckButton(data)}> <CheckCircleOutlineIcon /> </IconButton>
               <Input value={data.title} readOnly onClick={() => handleOpenModal(data)} style={InputStyle}/>
             </Box>
           )}
@@ -152,7 +162,7 @@ type EditModalProps = {
   updateTaskMutation: UseMutationResult<AxiosResponse<UpdateTask200, any>, AxiosError<unknown, any>, {
     taskId: string;
     data: UpdateTaskBody;
-  }, unknown>,
+  }, unknown>
   data: Task
 }
 
