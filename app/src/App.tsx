@@ -90,14 +90,20 @@ export const App = () => {
     },
   });
 
-  const updateTaskMutation = useUpdateTask(
-    {
-      mutation: 
-      {
-        onSuccess: (result) => client.setQueryData(result.id, result.title)
-      },
-    }
-  )
+  const updateTaskMutation = useUpdateTask({
+    mutation: {
+      onSuccess: (result) =>
+        client.setQueryData(getListTasksQueryKey(), (prevState: any) => {
+          const newTasks = prevState.data.tasks.map((task: Task) =>
+            task.id === result.data.task.id ? result.data.task : task
+          );
+          return {
+            ...prevState,
+            data: { tasks: newTasks },
+          };
+        }),
+    },
+  });
 
   const onClickCreateTaskButton = useCallback(() => {
     createTaskMutation.mutate();
@@ -107,6 +113,17 @@ export const App = () => {
   const handleOpenModal = (data: Task) => {
     setUpdateTask(data);
     setIsModalOpen(true);
+  }
+
+  const onClickCheckButton = (task: Task) => {
+    const finishedAt = new Date().toISOString();
+    updateTaskMutation.mutate({
+      taskId: task.id, 
+      data: {
+        ...task,
+        finishedAt,
+      }
+    });
   }
 
   return (
@@ -132,8 +149,8 @@ export const App = () => {
           }
           {
             status === 'success' && data.data.tasks.map((data: Task) => 
-            <Box key={data.id}>
-              {/* <IconButton onClick={(data) => onClickCheckButton} color='primary'> <CheckCircleOutlineIcon color='success' /> </IconButton> */}
+            <Box key={data.id} style={BoxTaskStyle}>
+              <IconButton style={{color: data.finishedAt === null ? '#64748B' : 'green'}} onClick={() => onClickCheckButton(data)}> <CheckCircleOutlineIcon /> </IconButton>
               <Input value={data.title} readOnly onClick={() => handleOpenModal(data)} style={InputStyle}/>
             </Box>
           )}
@@ -152,7 +169,7 @@ type EditModalProps = {
   updateTaskMutation: UseMutationResult<AxiosResponse<UpdateTask200, any>, AxiosError<unknown, any>, {
     taskId: string;
     data: UpdateTaskBody;
-  }, unknown>,
+  }, unknown>
   data: Task
 }
 
